@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:manage_calendar_events/manage_calendar_events.dart';
 import 'package:mythings/provider/calendar_state.dart';
-import 'package:mythings/views/tareas/tarea_list.dart';
+import 'package:mythings/views/recordatorios/recordatoriosList.dart';
 import 'package:provider/provider.dart';
 
 class CreateEventScreen extends StatefulWidget {
@@ -30,7 +30,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Nuevo Evento de Tarea'),
+          title: const Text('Nuevo Evento de Prueba'),
           backgroundColor: Colors.black,
         ),
         body: Card(
@@ -97,18 +97,33 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const TareaList()));
+                            builder: (context) => const Recordatorioslist()));
                   },
                   style: ButtonStyle(
                       backgroundColor:
                           WidgetStateProperty.all(Colors.deepOrangeAccent),
                       foregroundColor: WidgetStateProperty.all(Colors.black)),
-                  child: const Text('Crear Tarea'),
+                  child: const Text('Crear Prueba'),
                 ),
               ],
             ),
           ),
         ));
+  }
+
+  Future<String> _getCalendar() async {
+    Calendar? calendarAux;
+    String idCalendario = '';
+
+    final calendars = await _myPlugin.getCalendars();
+    calendarAux = calendars?.firstWhere(
+      (calendar) => calendar.name!.contains('@gmail.com'),
+    );
+
+    if (calendarAux != null) {
+      idCalendario = calendarAux.id!;
+    }
+    return idCalendario;
   }
 
   void _submitForm() async {
@@ -134,8 +149,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           });
       return;
     }
+
     final CalendarEvent event = CalendarEvent(
-      title: "TA ${titleController.text}",
+      title: "PB ${titleController.text}",
       description: descriptionController.text,
       location: locationController.text,
       startDate: startDate,
@@ -149,7 +165,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Exito'),
-            content: const Text('Tarea se creo correctamente'),
+            content: const Text('Prueba se creo correctamente'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {

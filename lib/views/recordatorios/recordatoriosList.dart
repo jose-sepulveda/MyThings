@@ -3,21 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:manage_calendar_events/manage_calendar_events.dart';
 import 'package:mythings/provider/calendar_state.dart';
-import 'package:mythings/views/recordatorios.dart';
-import 'package:mythings/views/tareas/create.dart';
-import 'package:mythings/views/tareas/update.dart';
+import 'package:mythings/views/home.dart';
+import 'package:mythings/views/recordatorios/createRecordatorio.dart';
+import 'package:mythings/views/recordatorios/updateRecordatorio.dart';
 import 'package:provider/provider.dart';
 
 import '../event_details.dart';
 
-class TareaList extends StatefulWidget {
-  const TareaList({super.key});
+class Recordatorioslist extends StatefulWidget {
+  const Recordatorioslist({super.key});
 
   @override
-  _TareaListState createState() => _TareaListState();
+  _RecordatoriosListState createState() => _RecordatoriosListState();
 }
 
-class _TareaListState extends State<TareaList> {
+class _RecordatoriosListState extends State<Recordatorioslist> {
   final CalendarPlugin _myPlugin = CalendarPlugin();
   @override
   void initState() {
@@ -28,20 +28,33 @@ class _TareaListState extends State<TareaList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lista de Tareas'),
+        title: const Text('Lista de Recordatorios',
+        style: TextStyle(fontSize: 32,
+        fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const Recordatorios()));
+                MaterialPageRoute(builder: (context) => const Home()));
           },
         ),
       ),
-      body: FutureBuilder<List<CalendarEvent>?>(
-        future: _fetchEventsFromIdCalendar(),
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0)
+                ),
+                child: FutureBuilder<List<CalendarEvent>?>(
+        future: _fetchEventsFromCalendar(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return Center(child: Text('No se encontraron eventos'));
+            return Center(child: Text('No hay recordatorios encontrados', style: TextStyle(fontSize: 20),));
           }
           List<CalendarEvent> events = snapshot.data!;
           return ListView.builder(
@@ -90,7 +103,7 @@ class _TareaListState extends State<TareaList> {
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10.0),
-                      color: const Color.fromARGB(255, 238, 145, 5),
+                      color: const Color.fromARGB(255, 181, 58, 9),
                     ),
                     child: ListTile(
                       title: Text(event.title!),
@@ -119,9 +132,14 @@ class _TareaListState extends State<TareaList> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () async {
+              ),
+
+              ),),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 4, 100, 225),),
+                  onPressed: () async {
           if (!mounted) return;
 
           MaterialPageRoute route = MaterialPageRoute(
@@ -131,13 +149,20 @@ class _TareaListState extends State<TareaList> {
           );
           await Navigator.of(context).push(route);
         },
+        child: const Text(
+              "Agregar Recordatorio",
+              style: TextStyle(fontSize: 32, color: Colors.white),
+            ),)
+              ),
+        ],
       ),
+      
     );
   }
 
   // Funcion listar eventos
 
-  Future<List<CalendarEvent>?> _fetchEventsFromIdCalendar() async {
+  Future<List<CalendarEvent>?> _fetchEventsFromCalendar() async {
     final String? calendarId =
         Provider.of<CalendarState>(context, listen: false).chosenCalendarId;
 
@@ -165,9 +190,19 @@ class _TareaListState extends State<TareaList> {
       if (!hasPermissions!) {
         await _myPlugin.requestPermissions();
       }
+      final calendars = await _myPlugin.getCalendars();
+      if (calendars == null || calendars.isEmpty) {
+        print('No se encontraron calendarios');
+        return null;
+      }
+      final idCalendar = await _getCalendar();
+      if (idCalendar == null) {
+        print('No se encontró un calendario con la ID máxima');
+        return null;
+      }
       final allEvents = await _myPlugin.getEvents(calendarId: calendarId);
       final filteredEvents = allEvents
-          ?.where((event) => event.title?.contains('TA') ?? false)
+          ?.where((event) => event.title?.contains('PB') ?? false)
           .toList();
 
       return filteredEvents;
@@ -179,7 +214,7 @@ class _TareaListState extends State<TareaList> {
             return AlertDialog(
               title: const Text('Exito'),
               content: const Text(
-                  'Error al obtener las Eventos Otros de este calendario'),
+                  'Error al obtener las Eventos Pruebas de este calendario'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
@@ -199,28 +234,27 @@ class _TareaListState extends State<TareaList> {
   // Entrega CalendarId
 
   Future<String> _getCalendar() async {
-    Calendar? maxIdCalendar;
-    String maxId = '';
+    Calendar? calendarAux;
+    String idCalendario = '';
 
     final calendars = await _myPlugin.getCalendars();
-    maxIdCalendar = calendars?.firstWhere(
+    calendarAux = calendars?.firstWhere(
       (calendar) => calendar.name!.contains('@gmail.com'),
     );
 
-    if (maxIdCalendar != null) {
-      maxId = maxIdCalendar.id!;
+    if (calendarAux != null) {
+      idCalendario = calendarAux.id!;
     }
-    return maxId;
+    return idCalendario;
   }
 
-  // ignore: unused_element
   Future<List<CalendarEvent>?> _fetchEventsByDateRange() async {
-    final maxIdCalendar = await _getCalendar();
+    final idCalendar = await _getCalendar();
     final DateTime endDate =
         DateTime.now().toUtc().add(const Duration(hours: 23, minutes: 59));
     DateTime startDate = endDate.subtract(const Duration(days: 3));
     return _myPlugin.getEventsByDateRange(
-      calendarId: maxIdCalendar,
+      calendarId: idCalendar,
       startDate: startDate,
       endDate: endDate,
     );

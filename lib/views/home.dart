@@ -5,7 +5,7 @@ import 'package:manage_calendar_events/manage_calendar_events.dart';
 import 'package:mythings/provider/calendar_state.dart';
 import 'package:mythings/services/ponderador.dart';
 import 'package:mythings/views/notas/notas.dart';
-import 'package:mythings/views/recordatorios.dart';
+import 'package:mythings/views/recordatorios/recordatoriosList.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
@@ -27,12 +27,11 @@ class _HomeState extends State<Home> {
       title: 'App Theme',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepOrange,
-          onSurface: Colors.blue,
+          seedColor: Color.fromARGB(255, 4, 100, 225),
         ),
         textTheme: const TextTheme(
           headlineLarge: TextStyle(
-            color: Colors.red,
+            color: Colors.black,
             fontSize: 32,
             fontWeight: FontWeight.w900,
           ),
@@ -89,7 +88,7 @@ class _MyWidgetState extends State<MyWidget> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Recordatorios()));
+                              builder: (context) => const Recordatorioslist()));
                       print('Botón Recordatorios presionado');
                     },
                     style: ElevatedButton.styleFrom(

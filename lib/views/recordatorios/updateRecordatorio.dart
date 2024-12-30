@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:manage_calendar_events/manage_calendar_events.dart';
 import 'package:mythings/provider/calendar_state.dart';
-import 'package:mythings/views/presentacion/presentacion_list.dart';
+import 'package:mythings/views/recordatorios/recordatoriosList.dart';
 import 'package:provider/provider.dart';
 
 class UpdateEventScreen extends StatefulWidget {
@@ -127,7 +127,7 @@ class _UpdateEventScreenState extends State<UpdateEventScreen> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const PresentacionList()));
+                        builder: (context) => const Recordatorioslist()));
               },
               style: ButtonStyle(
                   backgroundColor:
@@ -139,6 +139,21 @@ class _UpdateEventScreenState extends State<UpdateEventScreen> {
         ),
       ),
     );
+  }
+
+  Future<String> _getCalendar() async {
+    Calendar? calendarAux;
+    String idCalendario = '';
+
+    final calendars = await _myPlugin.getCalendars();
+    calendarAux = calendars?.firstWhere(
+      (calendar) => calendar.name!.contains('@gmail.com'),
+    );
+
+    if (calendarAux != null) {
+      idCalendario = calendarAux.id!;
+    }
+    return idCalendario;
   }
 
   void _updateEvent() async {
